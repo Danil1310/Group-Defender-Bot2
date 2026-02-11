@@ -302,10 +302,10 @@ def info(message):
                 user_mute_count = 0
             connect.commit()
             user_all_messages_count += 1
-            user_commands_messages_count += 1
-            bot.reply_to(message, f"<b>Информация о пользователе </b>@{user_username}:\n<b>Всего сообщений: </b>{user_all_messages_count}.\n<b>Взаимодействий с ботом: </b>{user_commands_messages_count}.\n<b>Количество мутов: </b>{user_mute_count}.", parse_mode='HTML') 
+            user_commands_messages_count += 1            
             bot_messages_count += 1
             all_messages_count += 1
+            bot.reply_to(message, f"<b>Информация о пользователе </b>@{user_username}:\n<b>Всего сообщений: </b>{user_all_messages_count}.\n<b>Взаимодействий с ботом: </b>{user_commands_messages_count}.\n<b>Количество мутов: </b>{user_mute_count}.", parse_mode='HTML') 
         except:
             bot.reply_to(message, f"Не удалось получить информацию о пользователе @{user_username}. Проверьте синтаксис команды.")
             bot_messages_count += 1 
@@ -2907,3 +2907,4 @@ def text_functions(message):
 
 
 bot.polling(none_stop=True, interval=0)
+
