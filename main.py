@@ -179,7 +179,7 @@ def info(message):
     query = """INSERT OR REPLACE INTO groups3 (group_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count) VALUES(?, ?, ?, ?, ?);"""
     cursor.execute(query, (chat_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count))
     connect.commit()
-    bot.send_message(message.chat.id, f"Приветствую!\nДля того, чтобы начать работу, добавьте меня в группу.\nТакже рекомендую прочитать подробный список наших команд(список скоро), чтобы разобраться с ними.\n\n<i>ВНИМАНИЕ! Чтобы ваш бот отвечал на административные команды других пользователей, вы должны сделать их администраторами(также не забудьте сделать самого бота администратором и дать ему все права, чтобы все команды работали).</i>", parse_mode="HTML")
+    bot.send_message(message.chat.id, f"Приветствую!\nДля того, чтобы начать работу, добавьте меня в группу.\nТакже рекомендую прочитать подробный список наших команд(список скоро), чтобы разобраться с ними.\n\n<i>ВНИМАНИЕ! Чтобы ваш бот отвечал на административные команды других пользователей, вы должны сделать их администраторами(также не забудьте сделать самого бота администратором и дать ему все права, чтобы все команды работали).</i>\nПоддержка бота - @sup_groups_defender_bot.", parse_mode="HTML")
     bot_messages_count += 1
     all_messages_count += 1
     query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
@@ -2907,4 +2907,5 @@ def text_functions(message):
 
 
 bot.polling(none_stop=True, interval=0)
+
 
