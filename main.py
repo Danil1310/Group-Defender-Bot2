@@ -718,7 +718,7 @@ def list_mute(message):
                 date = int(message.text[26:])
                 date1 = dt.timedelta(seconds=date) 
                 date2 = dt.datetime.now() + date1
-                date2 = date2.strftime("%d-%m-%Y %H:%M:%S")
+                date3 = date2.strftime("%d-%m-%Y %H:%M:%S")
                 user_to_mute = message.reply_to_message.from_user.id 
                 bot.restrict_chat_member(chat_id, user_to_mute, until_date=time()+date)
                 mute_count += 1
@@ -749,7 +749,7 @@ def list_mute(message):
                 cursor.execute(query, (chat_id, user_to_mute, user_all_messages_count, user_commands_messages_count, user_mute_count))
                 connect.commit()
                 if date > 30 and date < 31622400:
-                    bot.reply_to(message, f"Пользователь @{user_username} замучен до {date2}")
+                    bot.reply_to(message, f"Пользователь @{user_username} замучен до {date3}")
                     bot_messages_count += 1
                     all_messages_count += 1
                 else:
@@ -2903,6 +2903,7 @@ def text_functions(message):
     cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
     connect.commit()
     connect.close()
+
 
 
 bot.polling(none_stop=True, interval=0)
