@@ -1,7 +1,5 @@
 import telebot
 import sqlite3 
-import os
-from pathlib import Path
 from telebot import types
 from time import time
 bot = telebot.TeleBot('8241607493:AAEAf0mObVBxoV94Z8Ozmlewb6p5cKs1wlw')
@@ -38,55 +36,51 @@ ban_count = 0
 mute_count = 0
 user_warn_count = 0
 commands_list = ["/start@groups_defender_bot",  "/info@groups_defender_bot", "/ban@groups_defender_bot", "/unban@groups_defender_bot", "/mute@groups_defender_bot", "/unmute@groups_defender_bot", "/list_view@groups_defender_bot", "/spam_on@groups_defender_bot", "/spam_off@groups_defender_bot", "/cancel@groups_defender_bot", "/clear@groups_defender_bot", "/start_clear@groups_defender_bot", "/settings@groups_defender_bot", "/call@groups_defender_bot"]
-DATA_DIR = Path("/data")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-DB_PATH = DATA_DIR / "group_defender_database.db"
-if not DB_PATH.exists():
-    connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
-    cursor = connect.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS groups1 (
-        id INTEGER PRIMARY KEY,
-        group_id INTEGER NOT NULL,
-        list_words TEXT, 
-        spam_flags BOOLEAN NOT NULL,
-        clear_flags BOOLEAN NOT NULL,
-        call_admins TEXT NOT NULL,
-        mute_time INTEGER NOT NULL          
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS groups2 (
-        id INTEGER PRIMARY KEY,
-        group_id INTEGER NOT NULL,
-        all_messages_count INTEGER NOT NULL, 
-        bot_messages_count INTEGER NOT NULL,
-        other_messages_count INTEGER NOT NULL,
-        commands_messages_count INTEGER NOT NULL,
-        ban_count INTEGER NOT NULL,
-        mute_count INTEGER NOT NULL          
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS groups3 (
-        id INTEGER PRIMARY KEY,
-        user_id INTEGER NOT NULL,
-        group_id INTEGER NOT NULL,
-        user_all_messages_count INTEGER NOT NULL, 
-        user_commands_messages_count INTEGER NOT NULL,
-        user_mute_count INTEGER NOT NULL 
-        )
-    ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS groups4 (
-        id INTEGER PRIMARY KEY,
-        group_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        user_warn_count INTEGER NOT NULL
-        )
-    ''')
-    connect.commit()
-    connect.close()
+connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
+cursor = connect.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS groups1 (
+    id INTEGER PRIMARY KEY,
+    group_id INTEGER NOT NULL,
+    list_words TEXT, 
+    spam_flags BOOLEAN NOT NULL,
+    clear_flags BOOLEAN NOT NULL,
+    call_admins TEXT NOT NULL,
+    mute_time INTEGER NOT NULL          
+    )
+''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS groups2 (
+    id INTEGER PRIMARY KEY,
+    group_id INTEGER NOT NULL,
+    all_messages_count INTEGER NOT NULL, 
+    bot_messages_count INTEGER NOT NULL,
+    other_messages_count INTEGER NOT NULL,
+    commands_messages_count INTEGER NOT NULL,
+    ban_count INTEGER NOT NULL,
+    mute_count INTEGER NOT NULL          
+    )
+''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS groups3 (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    group_id INTEGER NOT NULL,
+    user_all_messages_count INTEGER NOT NULL, 
+    user_commands_messages_count INTEGER NOT NULL,
+    user_mute_count INTEGER NOT NULL 
+    )
+''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS groups4 (
+    id INTEGER PRIMARY KEY,
+    group_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    user_warn_count INTEGER NOT NULL
+    )
+''')
+connect.commit()
+connect.close()
     
 @bot.message_handler(commands=['start'])
 def info(message):
@@ -3430,6 +3424,7 @@ def text_functions(message):
 
 
 bot.infinity_polling(none_stop=True)
+
 
 
 
