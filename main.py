@@ -4,6 +4,7 @@ from telebot import types
 from time import time
 bot = telebot.TeleBot('8241607493:AAEAf0mObVBxoV94Z8Ozmlewb6p5cKs1wlw')
 import datetime as dt
+import random
 from datetime import timedelta
 from telebot.types import ChatMemberUpdated
 restricted_messages = set()
@@ -15,6 +16,7 @@ call_flag = False
 date_flag = False
 list_add_flag = False
 list_del_flag = False
+ban_flag = False
 message_id = None
 message_id2 = None
 last_word = None
@@ -326,7 +328,7 @@ def info(message):
                 user_warn_count = 0
             user_all_messages_count += 1
             user_commands_messages_count += 1
-            bot.reply_to(message, f"<b>Информация о пользователе </b>@{user_username}:\n<b>Всего сообщений: </b>{user_all_messages_count}.\n<b>Взаимодействий с ботом: </b>{user_commands_messages_count}.\n<b>Количество мутов: </b>{user_mute_count}.\n<b>Количество предупреждений: </b>{user_warn_count}.", parse_mode='HTML') 
+            bot.reply_to(message, f"<b>Информация о пользователе </b>@{user_username}:\n<b>Всего сообщений: </b>{user_all_messages_count}.\n<b>Взаимодействий с ботом: </b>{user_commands_messages_count}.\n<b>Количество мутов: </b>{user_mute_count}.\n<b>Количество предупреждений: </b>{user_warn_count}/3.", parse_mode='HTML') 
             bot_messages_count += 1
             all_messages_count += 1
         except:
@@ -350,6 +352,7 @@ def ban_user(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global ban_flag
     slovo = message.text
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
@@ -460,13 +463,13 @@ def ban_user(message):
             user_to_ban = message.reply_to_message.from_user.id 
             try: 
                 message_list = slovo.split()
-                reason = message_list[1]
+                reason = message_list[1::]
                 bot.ban_chat_member(chat_id, user_to_ban) 
                 ban_count += 1
                 query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
                 cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
                 connect.commit()
-                bot.reply_to(message, f"Пользователь @{user_username} забанен.\nПричина: {reason}.")
+                bot.reply_to(message, f"Пользователь @{user_username} забанен.\nПричина: {' '.join(reason)}.")
                 all_messages_count += 1 
                 bot_messages_count += 1
             except: 
@@ -494,6 +497,7 @@ def unban_user(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global ban_flag
     slovo = message.text
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
@@ -742,7 +746,7 @@ def list_mute(message):
             try: 
                 message_list = slovo.split()
                 date = int(message_list[1])
-                reason = message_list[2]
+                reason = message_list[2::]
                 date1 = dt.timedelta(seconds=date) 
                 date2 = dt.datetime.now() + date1
                 date3 = date2.strftime("%d-%m-%Y %H:%M:%S")
@@ -776,7 +780,7 @@ def list_mute(message):
                 cursor.execute(query, (chat_id, user_to_mute, user_all_messages_count, user_commands_messages_count, user_mute_count))
                 connect.commit()
                 if date > 30 and date < 31622400:
-                    bot.reply_to(message, f"Пользователь @{user_username} замучен до {date3}.\nПричина: {reason}.")
+                    bot.reply_to(message, f"Пользователь @{user_username} замучен до {date3}.\nПричина: {' '.join(reason)}.")
                     bot_messages_count += 1
                     all_messages_count += 1
                 else:
@@ -2417,7 +2421,7 @@ def warn_function(message):
             try:
                 message_list = slovo.split()
                 count = int(message_list[1])
-                warn_reason = message_list[2]
+                warn_reason = message_list[2::]
                 if count <= 0 and count > 3:
                     bot.reply_to(message, "Пожалуйста, укажите число, которое больше 0 и меньше 4.")
                     bot_messages_count += 1
@@ -2437,7 +2441,7 @@ def warn_function(message):
                     user_warn_count = 0
                 connect.commit()
                 user_warn_count += count
-                bot.reply_to(message, f"Пользователю @{user_username} было выдано {count} {text}.\nПричина: {warn_reason}.")
+                bot.reply_to(message, f"Пользователю @{user_username} было выдано {count} {text}.\nПричина: {' '.join(warn_reason)}.\nОбщее количество предупреждений: {user_warn_count}.")
                 bot_messages_count += 1
                 all_messages_count += 1
                 query = """INSERT OR REPLACE INTO groups4 (group_id, user_id, user_warn_count) VALUES(?, ?, ?);"""
@@ -2627,6 +2631,150 @@ def warn_remove_function(message):
             bot.reply_to(message, "У вас нет прав для этой команды.")
             all_messages_count += 1
             bot_messages_count += 1
+        query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
+        cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
+        connect.commit()
+        connect.close()
+
+@bot.message_handler(commands=['russian_roulette']) 
+def russian_roulette_function(message): 
+    global all_messages_count
+    global bot_messages_count
+    global ban_count
+    global mute_count
+    global other_messages_count
+    global commands_messages_count
+    global commands_messages_count
+    global user_all_messages_count
+    global user_commands_messages_count
+    global user_mute_count
+    global ban_flag
+    slovo = message.text
+    if "@groups_defender_bot" in slovo:
+        connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
+        cursor = connect.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups1 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            list_words TEXT, 
+            spam_flags BOOLEAN NOT NULL,
+            clear_flags BOOLEAN NOT NULL,
+            call_admins TEXT NOT NULL,
+            mute_time INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups2 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            all_messages_count INTEGER NOT NULL, 
+            bot_messages_count INTEGER NOT NULL,
+            other_messages_count INTEGER NOT NULL,
+            commands_messages_count INTEGER NOT NULL,
+            ban_count INTEGER NOT NULL,
+            mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups3 (
+            id INTEGER PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            group_id INTEGER NOT NULL,
+            user_all_messages_count INTEGER NOT NULL, 
+            user_commands_messages_count INTEGER NOT NULL,
+            user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        chat_id = message.chat.id 
+        user_id = message.from_user.id 
+        cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        all_messages_count = cursor.fetchone()
+        if all_messages_count is not None:
+            all_messages_count = all_messages_count[0]
+        else:
+            all_messages_count = 0
+        cursor.execute('SELECT bot_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        bot_messages_count = cursor.fetchone()
+        if bot_messages_count is not None:
+            bot_messages_count = bot_messages_count[0]
+        else:
+            bot_messages_count = 0
+        cursor.execute('SELECT commands_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        commands_messages_count = cursor.fetchone()
+        if commands_messages_count is not None:
+            commands_messages_count = commands_messages_count[0]
+        else:
+            commands_messages_count = 0
+        cursor.execute('SELECT other_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        other_messages_count = cursor.fetchone()
+        if other_messages_count is not None:
+            other_messages_count = other_messages_count[0]
+        else:
+            other_messages_count = 0
+        cursor.execute('SELECT ban_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        ban_count = cursor.fetchone()
+        if ban_count is not None:
+            ban_count = ban_count[0]
+        else:
+            ban_count = 0
+        cursor.execute('SELECT mute_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
+        mute_count = cursor.fetchone()
+        if mute_count is not None:
+            mute_count = mute_count[0]
+        else:
+            mute_count = 0
+        all_messages_count += 1
+        other_messages_count += 1
+        commands_messages_count += 1
+        query = """INSERT INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
+        cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
+        connect.commit()
+        cursor.execute('SELECT user_all_messages_count FROM groups3 WHERE user_id = ? AND group_id = ? ORDER BY id DESC', (user_id, chat_id,))
+        user_all_messages_count = cursor.fetchone()
+        if user_all_messages_count is not None:
+            user_all_messages_count = user_all_messages_count[0]
+        else:
+            user_all_messages_count = 0
+        cursor.execute('SELECT user_commands_messages_count FROM groups3 WHERE user_id = ? AND group_id = ? ORDER BY id DESC', (user_id, chat_id,))
+        user_commands_messages_count = cursor.fetchone()
+        if user_commands_messages_count is not None:
+            user_commands_messages_count = user_commands_messages_count[0]
+        else:
+            user_commands_messages_count = 0
+        cursor.execute('SELECT user_mute_count FROM groups3 WHERE user_id = ? AND group_id = ? ORDER BY id DESC', (user_id, chat_id,))
+        user_mute_count = cursor.fetchone()
+        if user_mute_count is not None:
+            user_mute_count = user_mute_count[0]
+        else:
+            user_mute_count = 0
+        connect.commit()
+        user_commands_messages_count += 1
+        user_all_messages_count += 1
+        query = """INSERT OR REPLACE INTO groups3 (group_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count) VALUES(?, ?, ?, ?, ?);"""
+        cursor.execute(query, (chat_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count))
+        connect.commit()
+        chislo = random.randint(0, 2)
+        if chislo == 0:
+            bot.reply_to(message, f"Удача, видимо, на вашей стороне! В этот раз вы остались в живых!")
+            all_messages_count += 1
+            bot_messages_count += 1
+        elif chislo == 1:
+            user_username = message.from_user.username 
+            user_to_ban = message.from_user.id 
+            try: 
+                bot.ban_chat_member(chat_id, user_to_ban) 
+                ban_count += 1
+                query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
+                cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
+                connect.commit()
+                bot.reply_to(message, f"Пользователь @{user_username} забанен.\nПричина: удача оказалась не на его стороне.")
+                all_messages_count += 1 
+                bot_messages_count += 1
+            except: 
+                bot.reply_to(message, f"Не удалось забанить пользователя @{user_username}.") 
+                all_messages_count += 1
+                bot_messages_count += 1
         query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
         cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
         connect.commit()
@@ -3275,7 +3423,7 @@ def text_functions(message):
     connect.close()
 
 
-bot.polling(none_stop=True, interval=0)
+bot.infinity_polling(none_stop=True)
 
 
 
