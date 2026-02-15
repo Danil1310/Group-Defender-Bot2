@@ -6,7 +6,7 @@ bot = telebot.TeleBot('8241607493:AAEAf0mObVBxoV94Z8Ozmlewb6p5cKs1wlw')
 import datetime as dt
 import random
 from datetime import timedelta
-from telebot.types import ChatMemberUpdated
+from telebot.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
 restricted_messages = set()
 restricted_messages_text = None
 restricted_flag = True
@@ -81,15 +81,19 @@ cursor.execute('''
 ''')
 connect.commit()
 connect.close()
-    
+
 @bot.message_handler(commands=['start'])
 def info(message):
     global commands_messages_count
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     chat_id = message.chat.id
     user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
     cursor = connect.cursor()
     cursor.execute('''
@@ -123,6 +127,14 @@ def info(message):
         user_all_messages_count INTEGER NOT NULL, 
         user_commands_messages_count INTEGER NOT NULL,
         user_mute_count INTEGER NOT NULL          
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
         )
     ''')
     cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -208,6 +220,7 @@ def info(message):
 
 @bot.message_handler(commands=['info'])
 def info(message):
+    global clear_flag
     global all_messages_count
     global bot_messages_count
     global ban_count
@@ -220,6 +233,9 @@ def info(message):
     global user_mute_count
     chat_id = message.chat.id 
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -254,6 +270,14 @@ def info(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -353,7 +377,11 @@ def ban_user(message):
     global user_commands_messages_count
     global user_mute_count
     global ban_flag
+    global clear_flag
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -388,6 +416,14 @@ def ban_user(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         chat_id = message.chat.id 
@@ -498,7 +534,11 @@ def unban_user(message):
     global user_commands_messages_count
     global user_mute_count
     global ban_flag
+    global clear_flag
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -533,6 +573,14 @@ def unban_user(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         chat_id = message.chat.id 
@@ -636,7 +684,11 @@ def list_mute(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -671,6 +723,14 @@ def list_mute(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         chat_id = message.chat.id 
@@ -811,8 +871,12 @@ def list_unmute(message):
     global commands_messages_count
     global user_all_messages_count
     global user_commands_messages_count
+    global clear_flag
     global user_mute_count
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo: 
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -847,6 +911,14 @@ def list_unmute(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         chat_id = message.chat.id 
@@ -958,9 +1030,13 @@ def list_view(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     slovo = message.text
     chat_id = message.chat.id
     user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -995,6 +1071,14 @@ def list_view(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -1148,6 +1232,14 @@ def save_btn(call):
         user_mute_count INTEGER NOT NULL          
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
+        )
+    ''')
     if is_user_admin(chat_id, user_id): 
         bot.edit_message_text(chat_id=message.chat.id, message_id=message_id2, text=f'Введите слово, которое вы хотите добавить.')
         bot_messages_count += 1
@@ -1216,6 +1308,14 @@ def save_btn(call):
         user_mute_count INTEGER NOT NULL          
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
+        )
+    ''')
     if is_user_admin(chat_id, user_id): 
         bot.edit_message_text(chat_id=message.chat.id, message_id=message_id2, text=f'Введите слово, которое вы хотите удалить.')
         bot_messages_count += 1
@@ -1279,6 +1379,14 @@ def save_btn(call):
         user_mute_count INTEGER NOT NULL          
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
+        )
+    ''')
     if is_user_admin(chat_id, user_id):
         restricted_messages.clear()
         restricted_messages_text = None
@@ -1312,6 +1420,9 @@ def clear_text_messages(message):
     slovo = message.text
     chat_id = message.chat.id 
     user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -1346,6 +1457,14 @@ def clear_text_messages(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -1444,6 +1563,9 @@ def delete_text_messages(message):
     slovo = message.text
     chat_id = message.chat.id 
     user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -1478,6 +1600,14 @@ def delete_text_messages(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -1610,6 +1740,14 @@ def cancel(message):
             user_mute_count INTEGER NOT NULL          
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
+            )
+        ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
         all_messages_count = cursor.fetchone()
         if all_messages_count is not None:
@@ -1706,7 +1844,10 @@ def spam_on(message):
     global user_mute_count
     slovo = message.text
     chat_id = message.chat.id
-    user_id = message.from_user.id     
+    user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return     
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -1741,6 +1882,14 @@ def spam_on(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -1870,6 +2019,9 @@ def spam_on(message):
     user_id = message.from_user.id
     slovo = message.text
     chat_id = message.chat.id     
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -1904,6 +2056,14 @@ def spam_on(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -2027,10 +2187,14 @@ def call_admins_function(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     chat_id = message.chat.id 
     user_id = message.from_user.id
     user_name = message.from_user.username
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2065,6 +2229,14 @@ def call_admins_function(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -2165,10 +2337,14 @@ def delete_messages(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     chat_id = message.chat.id 
     user_id = message.from_user.id
     user_name = message.from_user.username
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2203,6 +2379,14 @@ def delete_messages(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -2279,7 +2463,7 @@ def delete_messages(message):
                 all_messages_count += 1
                 return
             chat_id = message.chat.id
-            message_id = message.message_id
+            message_id = message.reply_to_message.id
             for i in range(count):
                 bot.delete_message(chat_id, message_id - i - 1)
             bot.reply_to(message, f'Удалено {count} сообщений.')
@@ -2312,9 +2496,13 @@ def warn_function(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     user_id = message.from_user.id
     chat_id = message.chat.id 
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2349,6 +2537,14 @@ def warn_function(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -2496,9 +2692,13 @@ def warn_remove_function(message):
     global user_all_messages_count
     global user_commands_messages_count
     global user_mute_count
+    global clear_flag
     user_id = message.from_user.id
     chat_id = message.chat.id 
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2533,6 +2733,14 @@ def warn_remove_function(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -2649,7 +2857,11 @@ def russian_roulette_function(message):
     global user_commands_messages_count
     global user_mute_count
     global ban_flag
+    global clear_flag
     slovo = message.text
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2684,6 +2896,14 @@ def russian_roulette_function(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         chat_id = message.chat.id 
@@ -2779,6 +2999,56 @@ def russian_roulette_function(message):
         cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
         connect.commit()
         connect.close()
+    
+# @bot.message_handler(commands=['banvote'])
+# def start_ban_vote(message):
+#     user_username = message.reply_to_message.from_user.username 
+#     user_to_ban = message.reply_to_message.from_user.id 
+#     bot.send_poll(chat_id=message.chat.id, question=f"Хотите ли вы забанить пользователя @{user_username}?", options=ansnwers, is_anonymous=False)
+#     msg = bot.poll_answer_handler
+#     if msg is not None:
+#         bot.send_message(message.chat.id, msg)
+
+# @bot.callback_query_handler(func=lambda call: True)
+# def handle_poll_answer(call):
+#     if call.poll:
+#         # Получаем идентификатор опроса
+#         poll_id = call.poll.id
+#         # Получаем результаты голосования
+#         poll_options = call.poll.options
+
+#         # Словарь для хранения количества голосов для каждого варианта
+#         votes_count = {option.text: option.votes for option in poll_options}
+
+#         # Находим вариант с максимальным количеством голосов
+#         max_votes = max(votes_count.values())
+#         winners = [name for name, votes in votes_count.items() if votes == max_votes]
+
+#         # Предположим, что имя пользователя хранится в сообщении
+#         user_id = call.from_user.id
+#         user_name = call.from_user.username or call.from_user.first_name
+
+#         result_message = f"Пользователь {user_name} (ID: {user_id}) проголосовал за: {', '.join(winners)} с количеством голосов: {max_votes}."
+        
+#         # Отправляем сообщение с результатами голосования
+#         bot.send_message(call.message.chat.id, result_message)
+    
+
+# @bot.callback_query_handler(func=lambda call: True)
+# def handle_poll_answer(call):
+#     if call.data in :
+#         poll_id = call.message.poll.id
+#         poll_results = call.message.poll.options
+#         max_votes = 0
+#         player_to_ban = None
+#         for option in poll_results:
+#             if option.votes > max_votes:
+#                 max_votes = option.votes
+#                 player_to_ban = option.text
+#         if player_to_ban:
+#             bot.send_message(call.chat.id, "тест")
+
+
 
 @bot.message_handler(commands=['settings'])
 def bot_settings(message):
@@ -2803,6 +3073,9 @@ def bot_settings(message):
     slovo = message.text
     chat_id = message.chat.id 
     user_id = message.from_user.id
+    if clear_flag == True:
+        bot.delete_message(message.chat.id, message.message_id)
+        return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
         cursor = connect.cursor()
@@ -2837,6 +3110,14 @@ def bot_settings(message):
             user_all_messages_count INTEGER NOT NULL, 
             user_commands_messages_count INTEGER NOT NULL,
             user_mute_count INTEGER NOT NULL          
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS groups4 (
+            id INTEGER PRIMARY KEY,
+            group_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            user_warn_count INTEGER NOT NULL
             )
         ''')
         if is_user_admin(chat_id, user_id):
@@ -2945,7 +3226,7 @@ def bot_settings(message):
             markup.add(callback_button1, callback_button2)
             bot_messages_count += 1
             all_messages_count += 1
-            msg = bot.send_message(message.chat.id, f"<b>Настройки и статус бота.</b>\n<i>True - Включен.\nFalse - Выключен.</i>\n<b>Статистика:</b>\n<i>Всего сообщений: </i>{all_messages_count}.\n\t\t<i>Сообщения от участников: </i>{other_messages_count}.\n\t\t\t\t<i>В том числе сообщения с командами: </i>{commands_messages_count}.\n\t\t<i>Сообщения от бота: </i>{bot_messages_count}.\n<i>Забанено участников ботом: </i>{ban_count}.\n<i>Замучено участников ботом: </i>{mute_count}.\n<b>Статус функций бота:</b>\n<b>Антиспам-фильтр: </b>{spam_flag}.\n<b>Clear-фильтр: </b>{clear_flag}.\n<b>Агенты поддержки(call-админы): </b>{call_admins_text}.\n<b>Время мута: </b>{date}.", reply_markup=markup, parse_mode="HTML")
+            msg = bot.send_message(message.chat.id, f"<b>Настройки и статус бота.</b>\n<i>True - Включен.\nFalse - Выключен.</i>\n<b>Статистика:</b>\n<i>Всего сообщений: </i>{all_messages_count}.\n\t\t<i>Сообщения от участников: </i>{other_messages_count}.\n\t\t\t\t<i>В том числе сообщения с командами: </i>{commands_messages_count}.\n\t\t<i>Сообщения от бота: </i>{bot_messages_count}.\n<i>Забанено участников ботом: </i>{ban_count}.\n<i>Замучено участников ботом: </i>{mute_count}.\n<b>Статус функций бота:</b>\n<b>Антиспам-фильтр: </b>{spam_flag}.\n<b>Агенты поддержки(call-админы): </b>{call_admins_text}.\n<b>Время мута: </b>{date}.", reply_markup=markup, parse_mode="HTML")
             query = """INSERT OR REPLACE INTO groups2 (group_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count) VALUES(?, ?, ?, ?, ?, ?, ?);"""
             cursor.execute(query, (chat_id, all_messages_count, bot_messages_count, other_messages_count, commands_messages_count, ban_count, mute_count))
             connect.commit()
@@ -2958,20 +3239,6 @@ def bot_settings(message):
             bot.reply_to(message, "У вас нет прав для этой команды.")
             all_messages_count += 1
             bot_messages_count += 1
-
-        
-# @bot.message_handler(commands=['test']) 
-# def server_isolation(message): 
-#     chat_id = message.chat.id 
-#     user_id = message.from_user.id 
-#     if is_user_admin(chat_id, user_id):
-#         markup = types.InlineKeyboardMarkup()
-#         callback_button1 = types.InlineKeyboardButton("Да", callback_data="start")
-#         callback_button2 = types.InlineKeyboardButton("Нет", callback_data="stop")
-#         markup.row(callback_button1, callback_button2)
-#         bot.send_message(message.chat.id, f"<b>ВНИМАНИЕ! Данная команда будет АВТОМАТИЧЕСКИ БАНИТЬ ВСЕХ НОВЫХ УЧАСТНИКОВ СЕРВЕРА.</b>\n\nВы точно хотите начать?", reply_markup=markup, parse_mode="HTML")
-#     else: 
-#         bot.reply_to(message, "У вас нет прав для этой команды.")
 
 @bot.callback_query_handler(func=lambda call: call.data == 'admins_settings')
 def save_btn(call):
@@ -3023,6 +3290,14 @@ def save_btn(call):
         user_all_messages_count INTEGER NOT NULL, 
         user_commands_messages_count INTEGER NOT NULL,
         user_mute_count INTEGER NOT NULL          
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
         )
     ''')
     if is_user_admin(chat_id, user_id): 
@@ -3090,6 +3365,14 @@ def save_btn(call):
         user_commands_messages_count INTEGER NOT NULL,
         user_mute_count INTEGER NOT NULL          
         )
+    ''')        
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
+        )
     ''')
     if is_user_admin(chat_id, user_id): 
         bot.edit_message_text(chat_id=message.chat.id, message_id=message_id, text= f'Введите новое время мута в секундах.')
@@ -3117,6 +3400,11 @@ def save_btn(call):
 #         query = """INSERT OR REPLACE INTO groups3 (group_id, user_id, user_join_date, user_all_messages_count, user_commands_messages_count, user_mute_count) VALUES(?, ?, ?, ?, ?, ?);"""
 #         cursor.execute(query, (chat_id, user_to_info, user_join_date, user_all_messages_count, user_commands_messages_count, user_mute_count))
 #         connect.commit()
+
+# @bot.message_handler(content_types=['new_chat_members'])
+# def welcome_new_member(message):
+#     for new_member in message.new_chat_members:
+#         bot.send_message(message.chat.id, f"Привет, {new_member.first_name}!")
 
 @bot.message_handler(content_types=['text'])
 def text_functions(message):
@@ -3181,6 +3469,14 @@ def text_functions(message):
         user_all_messages_count INTEGER NOT NULL, 
         user_commands_messages_count INTEGER NOT NULL,
         user_mute_count INTEGER NOT NULL          
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups4 (
+        id INTEGER PRIMARY KEY,
+        group_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        user_warn_count INTEGER NOT NULL
         )
     ''')
     cursor.execute('SELECT all_messages_count FROM groups2 WHERE group_id = ? ORDER BY id DESC', (chat_id,))
@@ -3424,11 +3720,3 @@ def text_functions(message):
 
 
 bot.infinity_polling(none_stop=True)
-
-
-
-
-
-
-
-
