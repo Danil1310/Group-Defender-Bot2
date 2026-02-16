@@ -2974,7 +2974,7 @@ def russian_roulette_function(message):
         query = """INSERT OR REPLACE INTO groups3 (group_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count) VALUES(?, ?, ?, ?, ?);"""
         cursor.execute(query, (chat_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count))
         connect.commit()
-        chislo = random.randint(0, 2)
+        chislo = random.randint(0, 1)
         if chislo == 0:
             bot.reply_to(message, f"Удача, видимо, на вашей стороне! В этот раз вы остались в живых!")
             all_messages_count += 1
@@ -3406,7 +3406,7 @@ def save_btn(call):
 #     for new_member in message.new_chat_members:
 #         bot.send_message(message.chat.id, f"Привет, {new_member.first_name}!")
 
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=['text', 'sticker'])
 def text_functions(message):
     global clear_flag
     global spam_flag 
@@ -3606,34 +3606,43 @@ def text_functions(message):
         bot.delete_message(message.chat.id, message.message_id)
 
     if spam_flag == True:
-            if count < 0.5 and len(message.text) > 1:
+        if count < 1:
+            if message.content_type == 'text':
                 if last_word is not None and last_word in message.text.lower():
                     count += 1
                 else:
                     last_word = message.text.lower()
                     count = 0
-            else:
-                try: 
-                    date1 = dt.timedelta(seconds=date) 
-                    date2 = dt.datetime.now() + date1
-                    date3 = date2.strftime("%Y-%m-%d %H:%M:%S")
-                    user_to_mute = message.from_user.id
-                    bot.delete_message(chat_id, message.message_id) 
-                    bot.restrict_chat_member(chat_id, user_to_mute, until_date=dt.datetime.now()+date1)
-                    if date < 30 and date > 31622400:
-                        bot.send_message(chat_id, f"Пользователь @{user_username} замучен до {date3}. Причина: спам.")
-                        all_messages_count += 1
-                        bot_messages_count += 1
-                    else:
-                        bot.send_message(chat_id, f"Пользователь @{user_username} замучен навсегда.")
-                        all_messages_count += 1
-                        bot_messages_count += 1
-                        count = 0
-                except: 
-                    bot.send_message(chat_id, f"Не удалось замутить пользователя.")
+                    count += 1
+            elif message.content_type == 'sticker':
+                count += 1
+            for entity in message.entities: 
+                if entity.type in ["url", "text_link"]: 
+                    bot.delete_message(message.chat.id, message.message_id)
+                else:
+                    return
+        else:
+            try: 
+                date1 = dt.timedelta(seconds=date) 
+                date2 = dt.datetime.now() + date1
+                date3 = date2.strftime("%Y-%m-%d %H:%M:%S")
+                user_to_mute = message.from_user.id
+                bot.delete_message(chat_id, message.message_id)
+                bot.restrict_chat_member(chat_id, user_to_mute, until_date=dt.datetime.now()+date1)
+                if date < 30 and date > 31622400:
+                    bot.send_message(chat_id, f"Пользователь @{user_username} замучен до {date3}. Причина: спам.")
+                    all_messages_count += 1
+                    bot_messages_count += 1
+                else:
+                    bot.send_message(chat_id, f"Пользователь @{user_username} замучен навсегда.")
                     all_messages_count += 1
                     bot_messages_count += 1
                     count = 0
+            except: 
+                bot.send_message(chat_id, f"Не удалось замутить пользователя.")
+                all_messages_count += 1
+                bot_messages_count += 1
+                count = 0
 
     if date_flag == True:
         if is_user_admin(chat_id, user_id):
@@ -3720,3 +3729,4 @@ def text_functions(message):
 
 
 bot.infinity_polling(none_stop=True)
+
