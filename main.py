@@ -7,6 +7,7 @@ import datetime as dt
 import random
 from datetime import timedelta
 from telebot.types import ChatMemberUpdated, InlineKeyboardMarkup, InlineKeyboardButton
+ansnwers = ["Да", "Нет", "Затрудняюсь ответить"]
 restricted_messages = set()
 restricted_messages_text = None
 restricted_flag = True
@@ -204,8 +205,7 @@ def info(message):
     cursor.execute(query, (chat_id, user_id, user_all_messages_count, user_commands_messages_count, user_mute_count))
     connect.commit()
     markup = types.InlineKeyboardMarkup(row_width=1)
-    bot_username = "groups_defender_bot"
-    add_to_chat_url = f"https://t.me/{bot_username}?startgroup=true"
+    add_to_chat_url = f"https://t.me/groups_defender_bot?startgroup=True&admin=change_info+restrict_members+delete_messages+pin_messages+invite_users"
     invite_button = types.InlineKeyboardButton(text="Добавить бота в группу", url=add_to_chat_url)
     list_button = types.InlineKeyboardButton(text="Открыть список команд", url="https://teletype.in/@groups_defender_bot/commands")
     support_button = types.InlineKeyboardButton(text="Связаться с поддержкой", url="https://t.me/sup_groups_defender_bot")
@@ -1035,7 +1035,7 @@ def list_view(message):
     chat_id = message.chat.id
     user_id = message.from_user.id
     if clear_flag == True:
-        bot.delete_message(message.chat.id, message.message_id)
+        bot.eete_message(message.chat.id, message.message_id)
         return
     if "@groups_defender_bot" in slovo:
         connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
@@ -3240,6 +3240,20 @@ def bot_settings(message):
             all_messages_count += 1
             bot_messages_count += 1
 
+        
+# @bot.message_handler(commands=['test']) 
+# def server_isolation(message): 
+#     chat_id = message.chat.id 
+#     user_id = message.from_user.id 
+#     if is_user_admin(chat_id, user_id):
+#         markup = types.InlineKeyboardMarkup()
+#         callback_button1 = types.InlineKeyboardButton("Да", callback_data="start")
+#         callback_button2 = types.InlineKeyboardButton("Нет", callback_data="stop")
+#         markup.row(callback_button1, callback_button2)
+#         bot.send_message(message.chat.id, f"<b>ВНИМАНИЕ! Данная команда будет АВТОМАТИЧЕСКИ БАНИТЬ ВСЕХ НОВЫХ УЧАСТНИКОВ СЕРВЕРА.</b>\n\nВы точно хотите начать?", reply_markup=markup, parse_mode="HTML")
+#     else: 
+#         bot.reply_to(message, "У вас нет прав для этой команды.")
+
 @bot.callback_query_handler(func=lambda call: call.data == 'admins_settings')
 def save_btn(call):
     global call_flag
@@ -3413,9 +3427,9 @@ def text_functions(message):
     global count
     global date
     global date_flag
+    global call_flag
     global call_admins
     global call_admins_text
-    global call_flag
     global message_id
     global list_add_flag
     global list_del_flag
@@ -3435,7 +3449,9 @@ def text_functions(message):
     global user_mute_count
     chat_id = message.chat.id 
     user_id = message.from_user.id
+    message_id = message.message_id
     user_username = message.from_user.username 
+    spisok = []
     connect = sqlite3.connect('group_defender_database.db', check_same_thread=False)
     cursor = connect.cursor()
     cursor.execute('''
@@ -3608,6 +3624,12 @@ def text_functions(message):
     if spam_flag == True:
         if count < 1:
             if message.content_type == 'text':
+                try:
+                    for entity in message.entities:
+                        if entity.type in ["url", "text_link"]: 
+                            bot.delete_message(message.chat.id, message.message_id)
+                except:
+                    pass
                 if last_word is not None and last_word in message.text.lower():
                     count += 1
                 else:
@@ -3616,33 +3638,34 @@ def text_functions(message):
                     count += 1
             elif message.content_type == 'sticker':
                 count += 1
-            for entity in message.entities: 
-                if entity.type in ["url", "text_link"]: 
-                    bot.delete_message(message.chat.id, message.message_id)
-                else:
-                    return
         else:
-            try: 
                 date1 = dt.timedelta(seconds=date) 
                 date2 = dt.datetime.now() + date1
                 date3 = date2.strftime("%Y-%m-%d %H:%M:%S")
                 user_to_mute = message.from_user.id
-                bot.delete_message(chat_id, message.message_id)
-                bot.restrict_chat_member(chat_id, user_to_mute, until_date=dt.datetime.now()+date1)
-                if date < 30 and date > 31622400:
-                    bot.send_message(chat_id, f"Пользователь @{user_username} замучен до {date3}. Причина: спам.")
-                    all_messages_count += 1
-                    bot_messages_count += 1
-                else:
-                    bot.send_message(chat_id, f"Пользователь @{user_username} замучен навсегда.")
+                for i in range(count):
+                    try:
+                        bot.delete_message(chat_id, message_id - i - 1)
+                    except:
+                        bot.send_message(chat_id, f"Ошибка при удалении сообщений.")
+                        bot_messages_count += 1
+                        all_messages_count += 1
+                try: 
+                    bot.restrict_chat_member(chat_id, user_to_mute, until_date=dt.datetime.now()+date1)
+                    if date > 30 and date < 31622400:
+                        bot.send_message(chat_id, f"Пользователь @{user_username} замучен до {date3}. Причина: спам.")
+                        all_messages_count += 1
+                        bot_messages_count += 1
+                    else:
+                        bot.send_message(chat_id, f"Пользователь @{user_username} замучен навсегда.")
+                        all_messages_count += 1
+                        bot_messages_count += 1
+                    count = 0
+                except: 
+                    bot.send_message(chat_id, f"Не удалось замутить пользователя.")
                     all_messages_count += 1
                     bot_messages_count += 1
                     count = 0
-            except: 
-                bot.send_message(chat_id, f"Не удалось замутить пользователя.")
-                all_messages_count += 1
-                bot_messages_count += 1
-                count = 0
 
     if date_flag == True:
         if is_user_admin(chat_id, user_id):
@@ -3728,5 +3751,5 @@ def text_functions(message):
     connect.close()
 
 
-bot.infinity_polling(none_stop=True)
 
+bot.polling(none_stop=True, interval=0)
